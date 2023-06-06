@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QCursor
 
 from source.controller.thread_helpers import ThreadLoopable, MutableValue
@@ -9,14 +9,15 @@ INTERVAL = 1 / 100  # of second
 
 
 class MousePosition:
-    def __init__(self):
+    def __init__(self, position_provider):
         self.screens = QApplication.screens()
+        self._position_provider = position_provider
 
     @property
     def position_on_screen(self) -> Point:
         position = QCursor.pos(self.screens[0])
-        QCursor.p
-        return Point(position.x(), position.y())
+        mapped = self._position_provider.mapFromGlobal(position)
+        return Point(mapped.x(), mapped.y())
 
 
 class FlickDetector:
@@ -37,7 +38,7 @@ class FlickDetector:
         if flick_stoped:
             self._in_flick = False
             self._direction = direction
-            event_bus.emit('flick_detected', self)
+            event_bus.emit('flick_detected')
 
         if new_flick_started:
             self._in_flick = True
@@ -46,9 +47,9 @@ class FlickDetector:
 
 class MouseParamsController(ThreadLoopable):
 
-    def __init__(self, mouse_position: MousePosition=None, flick_detector: FlickDetector=None):
+    def __init__(self, mouse_position: MousePosition, flick_detector: FlickDetector=None):
         self._interval = MutableValue(INTERVAL)
-        self._mouse = mouse_position or MousePosition()
+        self._mouse = mouse_position
         self._detector = flick_detector or FlickDetector()
         self._previous_position = self._mouse.position_on_screen
         self._previous_speed = Point(0, 0)
@@ -58,13 +59,14 @@ class MouseParamsController(ThreadLoopable):
         self.mouse_speed = Point(0, 0)
         self.mouse_acceleration = Point(0, 0)
 
+        self.flick_detected = event_bus.on('flick_detected', self.flick_detected)
+
         super().__init__(self._update_params, self._interval, run_immediately=False)
 
 
-    @event_bus.on('flick_detected')
     def flick_detected(self):
         # TODO: перебиндить на модель, которая во время игрового процесса это делает
-        print('detected')
+        ...#print('detected')
 
     def _update_params(self):
         self.mouse_position = self._mouse.position_on_screen
