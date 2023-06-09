@@ -1,11 +1,14 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtGui import QCursor
+from time import time
 
+from PyQt6.QtGui import QCursor
+from PyQt6.QtWidgets import QApplication
+
+from source.controller.event_bus import event_bus
 from source.controller.thread_helpers import ThreadLoopable, MutableValue
 from source.model.coordinates import Point
-from source.controller.event_bus import event_bus
+from source.model.core import Flick
 
-INTERVAL = 1 / 100  # of second
+INTERVAL = 1 / 135  # of second
 
 
 class MousePosition:
@@ -21,33 +24,47 @@ class MousePosition:
 
 
 class FlickDetector:
-    def __init__(self):
+    def __init__(self, min_flick_distance: float=5.0):
+        self.duration = time()
         self._in_flick = False
         self._direction = Point(0, 0)
+        self.starting_point = None
+        self.ending_point = None
+        self.min_flick_distance = min_flick_distance
 
-    def detect_flick(self, direction):
-        flick_started = direction != Point(0, 0) and not self._in_flick
-        if flick_started:
-            self._in_flick = True
-            self._direction = direction
-            return
+    def detect_flick(self, direction: Point, mouse_position: Point):
+        undirected = direction == Point(0, 0)
+        directed = not undirected
+        opposite_direction = direction == self._direction * -1
+        new_flick_started = directed and opposite_direction
 
-        flick_stoped = self._in_flick
-        new_flick_started = direction != Point(0, 0) and direction == self._direction * -1
+        if self._in_flick:
+            if undirected or new_flick_started:
+                self.ending_point = mouse_position
+                passed_sec = time() - self.duration
+                if passed_sec< 1.25:
+                    self.duration = passed_sec
+                    flick = Flick(self.starting_point, self.ending_point, self.duration)
+                    if flick.calc_length() > self.min_flick_distance:
+                        event_bus.emit('flick_detected', flick)
+                        self._in_flick = False
+                        self._direction = direction
+                if new_flick_started:
+                    self._start_flick(direction, mouse_position)
+        elif directed:
+            self._start_flick(direction, mouse_position)
 
-        if flick_stoped:
-            self._in_flick = False
-            self._direction = direction
-            event_bus.emit('flick_detected')
-
-        if new_flick_started:
-            self._in_flick = True
-            self._direction = direction
+    def _start_flick(self, direction, mouse_position):
+        self._in_flick = True
+        self._direction = direction
+        self.starting_point = mouse_position
+        self.ending_point = mouse_position
+        self.duration = time()
 
 
 class MouseParamsController(ThreadLoopable):
 
-    def __init__(self, mouse_position: MousePosition, flick_detector: FlickDetector=None):
+    def __init__(self, mouse_position: MousePosition, flick_detector: FlickDetector = None):
         self._interval = MutableValue(INTERVAL)
         self._mouse = mouse_position
         self._detector = flick_detector or FlickDetector()
@@ -58,15 +75,14 @@ class MouseParamsController(ThreadLoopable):
         self.mouse_position = Point(0, 0)
         self.mouse_speed = Point(0, 0)
         self.mouse_acceleration = Point(0, 0)
+        self.last_flick = None
 
         self.flick_detected = event_bus.on('flick_detected', self.flick_detected)
 
         super().__init__(self._update_params, self._interval, run_immediately=False)
 
-
-    def flick_detected(self):
-        # TODO: перебиндить на модель, которая во время игрового процесса это делает
-        ...#print('detected')
+    def flick_detected(self, flick: Flick):
+        self.last_flick = flick
 
     def _update_params(self):
         self.mouse_position = self._mouse.position_on_screen
@@ -76,7 +92,7 @@ class MouseParamsController(ThreadLoopable):
         self.mouse_speed = abs(delta_position) / INTERVAL
         self.mouse_acceleration = abs(self.mouse_speed - self._previous_speed) / INTERVAL
 
-        self._detector.detect_flick(self._direction)
+        self._detector.detect_flick(self._direction, self.mouse_position)
 
         self._previous_position = self.mouse_position
         self._previous_speed = self.mouse_speed

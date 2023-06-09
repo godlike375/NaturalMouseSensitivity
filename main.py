@@ -11,9 +11,10 @@ def main():
 
     view = MainWindow()
     mouse_position = MousePosition(view)
-    ochestrator = Orchestrator(mouse_position, view)
+    orchestrator = Orchestrator(mouse_position, view)
 
     app.exec()
+    orchestrator.stop()
 
 
 if __name__ == '__main__':

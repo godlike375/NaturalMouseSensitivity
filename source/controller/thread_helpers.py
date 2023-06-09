@@ -59,6 +59,7 @@ class ThreadLoopable:
     def __init__(self, loop_func, interval: MutableValue, run_immediately: bool = True):
         self._loop_func = loop_func
         self._interval = interval
+        self._thread_loop = StoppableThread()
         if run_immediately:
             self.start_thread(loop_func, interval)
 
