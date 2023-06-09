@@ -3,7 +3,7 @@ from source.controller.event_bus import event_bus
 from source.controller.thread_helpers import ThreadLoopable, MutableValue, run_after
 from source.controller.mouse import MouseParamsController, INTERVAL, MousePosition
 from source.model.target_positioning import TargetPositioning
-from source.model.core import FlickAndTarget, Target, calculate_average_delta
+from source.model.core import FlickAndTarget, Target, calculate_average_delta_diff
 from source.model.coordinates import Point
 from source.view.main_window import MainWindow, CALIBRATION_SCREEN_ID, SETTINGS_SCREEN_ID, RESULT_SCREEN_ID
 
@@ -19,7 +19,7 @@ class Orchestrator(ThreadLoopable):
         self.open_settings = event_bus.on('settings_opened', self.open_settings)
         self.clicked_target = event_bus.on('clicked_target', self.clicked_target)
 
-        self._calibration_targets_count = 10
+        self._calibration_targets_count = 5
         self._calibration_results = []
 
         super().__init__(self._in_game_loop, self._interval, run_immediately=False)
@@ -48,7 +48,7 @@ class Orchestrator(ThreadLoopable):
             self._calibration_results.append(flick_target)
             if self._calibration_targets_count == 0:
                 self._view.go_to_screen(RESULT_SCREEN_ID)
-                event_bus.emit('result_calculated', calculate_average_delta(self._calibration_results))
+                event_bus.emit('result_calculated', calculate_average_delta_diff(self._calibration_results))
                 return
         height = self._view.height()
         width = self._view.width()

@@ -1,5 +1,5 @@
 
-from source.model.core import Flick, calculate_average_delta
+from source.model.core import Flick, calculate_average_delta_diff
 from source.model.coordinates import Point
 
 def test_flick_calculation():
@@ -7,6 +7,6 @@ def test_flick_calculation():
                         [Flick(Point(0, 0), Point(3, 3)), Flick(Point(4, 4), Point(12, 12)),
                          Flick(Point(100, 100), Point(6, 6)), Flick(Point(50, 50), Point(105, 105))]
 
-    delta = calculate_average_delta(targets, flicks)
+    delta = calculate_average_delta_diff(targets, flicks)
 
     assert delta

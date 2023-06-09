@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 from source.model.coordinates import Point
 
@@ -30,10 +31,17 @@ class FlickAndTarget:
                f'duration=({self.flick.duration})],  ' \
                f'[target=({self.target.center.x}, {self.target.center.y})]'
 
-class DataHolder:
-    def __init__(self):
-        self._flicks_targets
+#class DataHolder:
+#    def __init__(self):
+#        self._flicks_targets
 
 
-def calculate_average_delta(targets_flicks: list) -> float:
-    return targets_flicks
+def calculate_average_delta_diff(flicks_targets: List[FlickAndTarget]) -> float:
+    average_result = 0
+    for i in flicks_targets:
+        actual = i.flick.start.calc_distance(i.flick.end)
+        expected = i.flick.start.calc_distance(i.target.center)
+        result = min(actual, expected) / max(actual, expected)
+        average_result += result if expected < actual else -result
+
+    return 1 + average_result / len(flicks_targets)
