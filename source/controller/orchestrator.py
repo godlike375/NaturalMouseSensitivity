@@ -19,7 +19,7 @@ class Orchestrator(ThreadLoopable):
         self.open_settings = event_bus.on('settings_opened', self.open_settings)
         self.clicked_target = event_bus.on('clicked_target', self.clicked_target)
 
-        self._calibration_targets_count = 5
+        self._calibration_targets_count = 30
         self._calibration_results = []
 
         super().__init__(self._in_game_loop, self._interval, run_immediately=False)

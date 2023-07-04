@@ -22,6 +22,10 @@ class MousePosition:
         mapped = self._position_provider.mapFromGlobal(position)
         return Point(mapped.x(), mapped.y())
 
+    def move_cursor_to_center(self):
+        center_window_pos = self._position_provider.mapToGlobal(self._position_provider.rect().center())
+        QCursor.setPos(center_window_pos)
+
 
 class FlickDetector:
     def __init__(self, min_flick_distance: float=5.0):
@@ -96,3 +100,5 @@ class MouseParamsController(ThreadLoopable):
 
         self._previous_position = self.mouse_position
         self._previous_speed = self.mouse_speed
+        print(self.mouse_acceleration)
+        #self._mouse.move_cursor_to_center()

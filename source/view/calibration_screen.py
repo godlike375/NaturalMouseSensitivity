@@ -6,11 +6,11 @@ from source.view.qt_utils import qpoint_to_point
 
 
 class TargetWidget(QLabel):
-    def __init__(self, parent=None, color=QColor(100, 200, 0), size: int=30):
+    def __init__(self, parent=None, color=QColor(100, 200, 0), size: int=40):
         super().__init__(parent)
         self.color = color
         self.radius = size
-        self.margin = (18, 18)
+        self.margin = (20, 20)
         self.pixmap = QPixmap(3 * self.radius + 1, 3 * self.radius + 1)
         self.pixmap.fill(QColor("transparent"))
 
@@ -33,8 +33,8 @@ class TargetWidget(QLabel):
                        qpoint_to_point(self.pos()).to_int())
 
 class CalibrationScreen(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, master):
+        super().__init__(master)
         layout = QVBoxLayout()
         self.setLayout(layout)
         self._target = TargetWidget(self)
