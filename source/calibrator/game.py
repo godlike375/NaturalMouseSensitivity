@@ -13,7 +13,7 @@ class CalibrationGame:
 
     def __init__(self, params, frametime: Frametime):
         self.app = Ursina()
-        window.vsync = True
+        #window.vsync = True
         self.frametime = frametime
 
         Entity.default_shader = lit_with_shadows_shader
@@ -30,12 +30,13 @@ class CalibrationGame:
 
         #self.valorant_sens = 0.581
 
-        self.valorant_sens = 0.592
+        # vertical, horizontal
+        self.valorant_sens = 0.325, 0.228
 
-        self.sensitivity = self.valorant_sens * 45.95
+        self.sensitivity = [axis * 45.95 for axis in self.valorant_sens]
 
 
-        self.player.mouse_sensitivity = Vec2(self.sensitivity, self.sensitivity)
+        self.player.mouse_sensitivity = Vec2(self.sensitivity[0], self.sensitivity[1])
 
         self.player_start_position = self.player.position
 

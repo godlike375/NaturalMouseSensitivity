@@ -10,7 +10,7 @@ from source.model.core import Target, FlickAndTarget, calculate_average_delta_di
 
 
 class Controller(Entity):
-    def __init__(self, game: CalibrationGame, mouse: MouseParamsControllerV2, targets_count: int = 220):
+    def __init__(self, game: CalibrationGame, mouse: MouseParamsControllerV2, targets_count: int = 25):
         super().__init__()
         self.left_down = game.left_down
         self.player = game.player

@@ -49,29 +49,70 @@ class FlickAndTarget:
                f'target=({self.target})'
 
 
+def vertical_vector(vec: Vector) -> Vector:
+    return Vector(0, vec.y, vec.z)
+
+def horizontal_vector(vec: Vector) -> Vector:
+    return Vector(vec.x, 0, vec.z)
+
+def append_flicks(overflicks, underflicks, result):
+    if result >= 1:
+        underflicks.append(result)
+    else:
+        overflicks.append(result)
+
+def remove_percentiles(overflicks, underflicks, percentile):
+    overflicks = overflicks[int(len(overflicks) * percentile): int(len(overflicks) * 1 - percentile)]
+    underflicks = underflicks[int(len(underflicks) * percentile): int(len(underflicks) * 1 - percentile)]
+    return overflicks, underflicks
+
 def calculate_average_delta_diff(flicks_targets: List[FlickAndTarget]) -> float:
     average_result = 0
-    overflicks = []
-    underflicks = []
+    horizontal_overflicks = []
+    horizontal_underflicks = []
+    horizontal_packed = (horizontal_overflicks, horizontal_underflicks,)
+
+    vertical_overflicks = []
+    vertical_underflicks = []
+    vertical_packed = (vertical_overflicks, vertical_underflicks,)
     # сбалансированное среднее (ср1*(к2 / к1) + ср2 (к1 / к2) )/ 2
     for i in flicks_targets:
-        actual = i.flick.angle_between_start_end()
-        expected = i.flick.start.angle_deg(i.target.center)
-        result = expected / actual
-        if result >= 1:
-            underflicks.append(result)
-        else:
-            overflicks.append(result)
+        horizontal_angle_actual = horizontal_vector(i.flick.start).angle_deg(horizontal_vector(i.flick.end))
+        vertical_angle_actual = vertical_vector(i.flick.start).angle_deg(vertical_vector(i.flick.end))
+
+        horizontal_angle_expected = horizontal_vector(i.flick.start).angle_deg(horizontal_vector(i.target.center))
+        vertical_angle_expected = vertical_vector(i.flick.start).angle_deg(vertical_vector(i.target.center))
+
+        #actual = i.flick.angle_between_start_end()
+        #expected = i.flick.start.angle_deg(i.target.center)
+        #result = expected / actual
+
+        horizontal_result = horizontal_angle_expected / horizontal_angle_actual
+        vertical_result = vertical_angle_expected / vertical_angle_actual
+
+        append_flicks(*horizontal_packed, horizontal_result)
+        append_flicks(*vertical_packed, vertical_result)
+
 
     # TODO: отфильтровать выбросы нахер
 
-    overflicks.sort()
-    underflicks.sort()
+    horizontal_overflicks.sort()
+    horizontal_underflicks.sort()
+
+    vertical_overflicks.sort()
+    vertical_underflicks.sort()
+
     percentile = 0.115
-    overflicks = overflicks[int(len(overflicks) * percentile): int(len(overflicks) * 1 - percentile)]
-    underflicks = underflicks[int(len(underflicks) * percentile): int(len(underflicks) * 1 - percentile)]
-    flicks = [*overflicks, *underflicks]
-    return mean(flicks)
+
+    horizontal_packed = \
+        remove_percentiles(*horizontal_packed, percentile)
+
+    vertical_packed = \
+        remove_percentiles(*vertical_packed, percentile)
+
+    horizontal_flicks = [*horizontal_packed[0], *horizontal_packed[1]]
+    vertical_flicks = [*vertical_packed[0], *vertical_packed[1]]
+    return mean(horizontal_flicks), mean(vertical_flicks)
     #return (mean(overflicks) + mean(underflicks)) / 2
 
 
