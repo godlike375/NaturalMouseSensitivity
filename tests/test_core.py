@@ -1,11 +1,11 @@
 
 from source.model.core import Flick, calculate_average_delta_diff
-from source.model.coordinates import Point
+from source.aliases import Vector
 
 def test_flick_calculation():
-    targets, flicks = [Point(2, 2), Point(10, 10), Point(4, 4), Point(100, 100)],\
-                        [Flick(Point(0, 0), Point(3, 3)), Flick(Point(4, 4), Point(12, 12)),
-                         Flick(Point(100, 100), Point(6, 6)), Flick(Point(50, 50), Point(105, 105))]
+    targets, flicks = [Vector(2, 2), Vector(10, 10), Vector(4, 4), Vector(100, 100)],\
+                        [Flick(Vector(0, 0), Vector(3, 3)), Flick(Vector(4, 4), Vector(12, 12)),
+                         Flick(Vector(100, 100), Vector(6, 6)), Flick(Vector(50, 50), Vector(105, 105))]
 
     delta = calculate_average_delta_diff(targets, flicks)
 

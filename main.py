@@ -1,7 +1,5 @@
 from PyQt6.QtWidgets import QApplication
-from source.view.main_window import MainWindow
-from source.controller.mouse import MouseParamsController, MousePosition
-from source.controller.orchestrator import Orchestrator
+from source.launcher.launcher import Launcher
 
 import sys
 
@@ -9,12 +7,9 @@ import sys
 def main():
     app = QApplication(sys.argv)
 
-    view = MainWindow()
-    mouse_position = MousePosition(view)
-    orchestrator = Orchestrator(mouse_position, view)
+    view = Launcher()
 
     app.exec()
-    orchestrator.stop()
 
 
 if __name__ == '__main__':
